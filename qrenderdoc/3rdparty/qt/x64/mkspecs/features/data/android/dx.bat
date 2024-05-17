@@ -36,9 +36,9 @@ REM Use dpZ here to make it more like the Google version.
 for %%F in ("%dx_jar_path%") do set dpZ=%%~dpF
 
 rem Check we have a valid Java.exe in the path.
-set java_exe=
-if exist    "%dpZ%..\tools\lib\find_java.bat" call    "%dpZ%..\tools\lib\find_java.bat"
-if exist "%dpZ%..\..\tools\lib\find_java.bat" call "%dpZ%..\..\tools\lib\find_java.bat"
+set java_exe="D:\jdk-1.8\bin\java.exe"
+REM if exist    "%dpZ%..\tools\lib\find_java.bat" call    "%dpZ%..\tools\lib\find_java.bat"
+REM if exist "%dpZ%..\..\tools\lib\find_java.bat" call "%dpZ%..\..\tools\lib\find_java.bat"
 
 if not defined java_exe goto :EOF
 
