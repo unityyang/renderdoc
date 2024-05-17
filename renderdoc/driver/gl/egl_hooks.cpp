@@ -957,12 +957,29 @@ bool ShouldHookEGL()
     return true;
   }
 
-  rdcstr ignore_layers = Process::GetEnvVariable("IGNORE_LAYERS");
+  rdcstr ignore_layers;
+  int ignore_layers_ret_code = Process::GetEnvVariableAndRetCode("IGNORE_LAYERS", ignore_layers);
+  RDCLOG("get IGNORE_LAYERS with retCode: %d, value: %s", ignore_layers_ret_code, ignore_layers.c_str());
 
-  // if we set IGNORE_LAYERS externally that means the layers are broken or can't be configured, so
-  // hook EGL in spite of the layers being present
-  if(ignore_layers.size() >= 1 && ignore_layers[0] == '1')
-    return true;
+  if(ignore_layers_ret_code == 0)
+  {
+    // if we set IGNORE_LAYERS externally that means the layers are broken or can't be configured, so
+    // hook EGL in spite of the layers being present
+    if(ignore_layers.size() >= 1 && ignore_layers[0] == '1')
+      return true;
+  }
+  else
+  {
+    // If the device cannot get property with shell process, we could use a confFIle to enable renderdoc.
+    // the confFile should be in the specific directory and NOT be in any child directory:
+    // SDK_LEVEL < 30:  /sdcard/Android/data/your.package.name/files
+    // SDK_LEVEL >= 30: /sdcard/Android/media/your.package.name/files
+    rdcstr confFile = FileIO::GetAppFolderFilename("renderdoc_enable.conf");
+    RDCLOG("Finding renderdoc_enable file: %s", confFile.c_str());
+    bool file_exsists = FileIO::exists(confFile);
+    RDCLOG("renderdoc_enable file exsists: %d", file_exsists ? 1 : 0);
+    return file_exsists;
+  }
 
   const char *eglExts = query_string(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 
@@ -972,7 +989,8 @@ bool ShouldHookEGL()
     return false;
   }
 
-  return true;
+  RDCLOG("ShouldHookEGL default return FALSE.");
+  return false;
 }
 
 #else

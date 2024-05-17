@@ -55,6 +55,7 @@ void RegisterEnvironmentModification(const EnvironmentModification &modif);
 void ApplyEnvironmentModification();
 
 rdcstr GetEnvVariable(const rdcstr &name);
+int GetEnvVariableAndRetCode(const rdcstr &name, rdcstr &outValue);
 
 uint64_t GetMemoryUsage();
 

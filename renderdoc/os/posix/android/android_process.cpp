@@ -173,6 +173,26 @@ rdcstr Process::GetEnvVariable(const rdcstr &name)
   return settingsOutput;
 }
 
+int Process::GetEnvVariableAndRetCode(const rdcstr &name, rdcstr &outValue)
+{
+  // we fake environment variables with properties
+  Process::ProcessResult result;
+  Process::LaunchProcess("getprop", ".",
+                         StringFormat::Fmt("debug.rdoc.%s variable_is_not_set", name.c_str()), true,
+                         &result);
+
+  rdcstr settingsOutput;
+
+  settingsOutput = result.strStdout.trimmed();
+
+  if(settingsOutput == "variable_is_not_set")
+    outValue = rdcstr();
+
+  outValue = settingsOutput;
+  
+  return result.retCode;
+}
+
 uint64_t Process::GetMemoryUsage()
 {
   FILE *f = FileIO::fopen("/proc/self/statm", FileIO::ReadText);
