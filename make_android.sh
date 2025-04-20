@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export ANDROID_SDK=~/AppData/Local/Android/Sdk
-export ANDROID_NDK=~/AppData/Local/Android/Sdk/ndk/25.1.8937393
+export ANDROID_NDK=~/AppData/Local/Android/Sdk/ndk/29.0.13113456
 export JAVA_HOME=/d/TencentKona-17.0.14.b1
 
 export APK_TARGET_ID=android-26
@@ -14,9 +14,11 @@ export PATH=/C/Program\ Files/CMake/bin:~/AppData/Local/Android/Sdk/cmake/3.22.1
 mkdir -p build-android-v8a
 cd build-android-v8a
 cmake -DBUILD_ANDROID=On -DANDROID_ABI=arm64-v8a \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DSTRIP_ANDROID_LIBRARY=On\
 	-DBUILD_VERSION_HASH=$GIT_HASH \
 	-G "MinGW Makefiles" ..
-~/AppData/Local/Android/Sdk/ndk/25.1.8937393/prebuilt/windows-x86_64/bin/make.exe VERBOSE=1
+~/AppData/Local/Android/Sdk/ndk/29.0.13113456/prebuilt/windows-x86_64/bin/make.exe VERBOSE=1
 
 # cd ..
 # mkdir -p build-android-v7a

@@ -1037,6 +1037,8 @@ bool ShouldHookEGL()
 
 bool ShouldHookEGL()
 {
+  RDCLOG("ShouldHookEGL BEGINE");
+  RDCLOG("ShouldHookEGL Check eglQueryString");
   void *egl_handle = dlopen("libEGL.so", RTLD_LAZY);
   PFN_eglQueryString query_string = (PFN_eglQueryString)dlsym(egl_handle, "eglQueryString");
   if(!query_string)
@@ -1045,6 +1047,7 @@ bool ShouldHookEGL()
     return true;
   }
 
+  RDCLOG("ShouldHookEGL Check IGNORE_LAYERS");
   rdcstr ignore_layers = Process::GetEnvVariable("IGNORE_LAYERS");
 
   // if we set IGNORE_LAYERS externally that means the layers are broken or can't be configured, so
@@ -1052,6 +1055,7 @@ bool ShouldHookEGL()
   if(ignore_layers.size() >= 1 && ignore_layers[0] == '1')
     return true;
 
+  RDCLOG("ShouldHookEGL Check EGL_EXTENSIONS");
   const char *eglExts = query_string(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 
   if(eglExts && strstr(eglExts, "EGL_ANDROID_GLES_layers"))

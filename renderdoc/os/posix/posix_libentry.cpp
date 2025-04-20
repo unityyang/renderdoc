@@ -45,6 +45,59 @@ void library_loaded()
   }
   else
   {
+    bool canInit = false;
+    rdcstr curpackage;
+    FileIO::GetExecutableFilename(curpackage);
+    rdcstr currProj = curpackage.substr(curpackage.find_last_of(".") + 1);
+    rdcstr UECommandLineDir = FileIO::GetAppFolderFilename(rdcstr("UnrealGame/") + currProj + rdcstr("/"));
+    // rdcstr UECommandLineFile = UECommandLineDir + rdcstr("UECommandLine.txt");
+    // if(FileIO::exists(UECommandLineFile))
+    // {
+    //   FILE *f = FileIO::fopen(UECommandLineFile, FileIO::ReadText);
+    //   if(f)
+    //   {
+    //     char buf[1024];
+    //     bool find_tag = false;
+    //     while(!FileIO::feof(f))
+    //     {
+    //       memset(buf, 0, 1024);
+    //       size_t numRead = FileIO::fread(buf, 1, 1023, f);
+    //       if(numRead == 0)
+    //         break;
+
+    //       rdcstr line(buf);
+    //       if(line.contains(" -renderdoc"))
+    //       {
+    //         find_tag = true;
+    //         break;
+    //       }
+    //     }
+
+    //     if(find_tag)
+    //     {
+    //       canInit = true;
+    //     }
+
+    //     FileIO::fclose(f);
+    //   }
+    // }
+    if(!canInit)
+    {
+      rdcstr confFile = UECommandLineDir + rdcstr("renderdoc_enable.conf");
+      bool file_exsists = FileIO::exists(confFile);
+      RDCLOG("File '%s' %s", confFile.c_str(), file_exsists ? "found" : "not found");
+      if(file_exsists)
+      {
+        RDCLOG("Found config file, enabling hooks");
+        canInit = true;
+      }
+    }
+    if(!canInit)
+    {
+      RDCLOG("No config file found, not creating hooks");
+      return;
+    }
+
     RenderDoc::Inst().Initialise();
 
     ResetHookingEnvVars();

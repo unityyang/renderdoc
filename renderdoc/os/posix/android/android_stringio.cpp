@@ -74,10 +74,10 @@ rdcstr GetTempRootPath()
   __system_property_get("ro.build.version.sdk", platformVersionChar);
   int platformVersion = atoi(platformVersionChar);
 
-  if(platformVersion < 30)
+  // if(platformVersion < 30)
     return "/sdcard/Android/data/" + package + "/files";
-  else
-    return "/sdcard/Android/media/" + package + "/files";
+  // else
+  //   return "/sdcard/Android/media/" + package + "/files";
 }
 
 rdcstr GetAppFolderFilename(const rdcstr &filename)

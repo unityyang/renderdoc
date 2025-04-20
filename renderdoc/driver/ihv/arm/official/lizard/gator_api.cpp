@@ -308,7 +308,7 @@ bool GatorApi::sendVersion()
 
   // "GATOR 670\n"
   size_t bytesRecv = 0;
-  size_t size = 10;
+  constexpr size_t size = 10;
   char buffer[size];
   m_connection->receiveAll(buffer, sizeof(buffer), &bytesRecv);
 
