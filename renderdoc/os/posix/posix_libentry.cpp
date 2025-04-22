@@ -40,10 +40,8 @@ bool library_enabled()
   {
     rdcstr confFile = UECommandLineDir + rdcstr("renderdoc_enable.conf");
     bool file_exsists = FileIO::exists(confFile);
-    RDCLOG("File '%s' %s", confFile.c_str(), file_exsists ? "found" : "not found");
     if(file_exsists)
     {
-      RDCLOG("Found config file, enabling hooks");
       shouldEnabled = true;
     }
   }
@@ -70,10 +68,16 @@ void library_loaded()
   {
     if(!library_enabled())
     {
-      RDCLOG("Library disabled, cannot initialise RenderDoc - hooks disabled");
+      rdcstr STR_SLEEP_TIME_MS = Process::GetEnvVariable("SLEEP_TIME_MS");
+      int SLEEP_TIME_MS = atoi(STR_SLEEP_TIME_MS.c_str());
+      int sleepTime = SLEEP_TIME_MS > 0 ? SLEEP_TIME_MS : 1000;
+      // Some device need sleep long time to avoid system crash
+      Threading::Sleep(sleepTime);
       return;
     }
 
+    // 计时
+    uint64_t start = Timing::GetTick();   
     RenderDoc::Inst().Initialise();
 
     ResetHookingEnvVars();
@@ -103,6 +107,9 @@ void library_loaded()
 
     LibraryHooks::RegisterHooks();
 
+    uint64_t end = Timing::GetTick();
+    uint64_t diff = (end - start) / Timing::GetTickFrequency();
+    RDCLOG("Init Timing: %llu", diff); 
     // we have a short sleep here to allow target control to connect, since unlike windows we can't
     // suspend the process during startup.
     Threading::Sleep(15);
