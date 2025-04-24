@@ -177,6 +177,8 @@ public:
   // replay-type programs.
   static bool Detect(const char *identifier);
 
+  static void PreventInit();
+
 private:
   static void BeginHookRegistration();
   static void EndHookRegistration();

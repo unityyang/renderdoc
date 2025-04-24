@@ -58,3 +58,9 @@ void LibraryHooks::OptionsUpdated()
   for(LibraryHook *lib : LibList())
     lib->OptionsUpdated();
 }
+
+void LibraryHooks::PreventInit()
+{
+  EndHookRegistration();
+}
+

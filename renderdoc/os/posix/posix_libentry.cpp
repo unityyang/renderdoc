@@ -31,19 +31,13 @@ void ResetHookingEnvVars();
 bool library_enabled()
 {
   bool shouldEnabled = false;
-  rdcstr curpackage;
-  FileIO::GetExecutableFilename(curpackage);
-  rdcstr currProj = curpackage.substr(curpackage.find_last_of(".") + 1);
-  rdcstr UECommandLineDir = FileIO::GetAppFolderFilename(rdcstr("UnrealGame/") + currProj + rdcstr("/"));
-
-  if(!shouldEnabled)
+  rdcstr package_name;
+  FileIO::GetExecutableFilename(package_name);
+  rdcstr confFile = rdcstr("sdcard/FrameDoc/") + package_name + rdcstr(".conf");
+  bool file_exsists = FileIO::exists(confFile);
+  if(file_exsists)
   {
-    rdcstr confFile = UECommandLineDir + rdcstr("renderdoc_enable.conf");
-    bool file_exsists = FileIO::exists(confFile);
-    if(file_exsists)
-    {
-      shouldEnabled = true;
-    }
+    shouldEnabled = true;
   }
   
   return shouldEnabled;
@@ -68,17 +62,13 @@ void library_loaded()
   {
     if(!library_enabled())
     {
-      rdcstr STR_SLEEP_TIME_MS = Process::GetEnvVariable("SLEEP_TIME_MS");
-      int SLEEP_TIME_MS = atoi(STR_SLEEP_TIME_MS.c_str());
-      int sleepTime = SLEEP_TIME_MS > 0 ? SLEEP_TIME_MS : 1000;
-      // Some device need sleep long time to avoid system crash
-      Threading::Sleep(sleepTime);
+      LibraryHooks::PreventInit();
       return;
     }
 
-    // 计时
-    uint64_t start = Timing::GetTick();   
     RenderDoc::Inst().Initialise();
+
+    RDCLOG("FrameDoc Initialised.");
 
     ResetHookingEnvVars();
 
@@ -107,9 +97,6 @@ void library_loaded()
 
     LibraryHooks::RegisterHooks();
 
-    uint64_t end = Timing::GetTick();
-    uint64_t diff = (end - start) / Timing::GetTickFrequency();
-    RDCLOG("Init Timing: %llu", diff); 
     // we have a short sleep here to allow target control to connect, since unlike windows we can't
     // suspend the process during startup.
     Threading::Sleep(15);
