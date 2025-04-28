@@ -25,6 +25,7 @@
 #include "core/core.h"
 #include "hooks/hooks.h"
 #include "os/os_specific.h"
+#include "api/replay/version.h"
 
 void ResetHookingEnvVars();
 
@@ -63,12 +64,14 @@ void library_loaded()
     if(!library_enabled())
     {
       LibraryHooks::PreventInit();
+      RenderDoc::Inst().InitLogFile();
+      RDCLOG("FrameDoc v%s (%s) Disabled.", FRAMEDOC_MAJOR_MINOR_VERSION_STRING, GitVersionHash);
       return;
     }
 
     RenderDoc::Inst().Initialise();
 
-    RDCLOG("FrameDoc Initialised.");
+    RDCLOG("FrameDoc v%s (%s) Initialised.", FRAMEDOC_MAJOR_MINOR_VERSION_STRING, GitVersionHash);
 
     ResetHookingEnvVars();
 

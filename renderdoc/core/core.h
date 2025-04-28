@@ -445,6 +445,9 @@ public:
   const char *GetCaptureFileTemplate() const { return m_CaptureFileTemplate.c_str(); }
   const rdcstr &GetCurrentTarget() const { return m_Target; }
   void Initialise();
+  // set default capture log - useful for when hooks aren't setup
+  // through the UI (and a log file isn't set manually)
+  void InitLogFile();
   void RemoveHooks();
 
   const GlobalEnvironment &GetGlobalEnvironment() { return m_GlobalEnv; }
@@ -614,6 +617,8 @@ public:
   void CycleActiveWindow();
   uint32_t GetCapturableWindowCount();
 
+  bool IsInitialized();
+
 private:
   RenderDoc();
   ~RenderDoc();
@@ -725,6 +730,8 @@ private:
   SDObject *FindConfigSetting(const rdcstr &name);
 
   SDObject *m_Config = NULL;
+
+  bool m_Initialized = false;
 };
 
 struct DriverRegistration

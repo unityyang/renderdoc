@@ -326,6 +326,12 @@ extern "C" RENDERDOC_API int RENDERDOC_CC RENDERDOC_GetAPI(RENDERDOC_Version ver
     return 0;
   }
 
+  if(!RenderDoc::Inst().IsInitialized())
+  {
+    RDCERR("Call RENDERDOC_GetAPI failed - RenderDoc not initialised");
+    return 0;
+  }
+
   int ret = 0;
   int major = 0, minor = 0, patch = 0;
 

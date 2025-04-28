@@ -477,16 +477,7 @@ void RenderDoc::Initialise()
   // set default capture log - useful for when hooks aren't setup
   // through the UI (and a log file isn't set manually)
   {
-    rdcstr capture_filename;
-
-    const rdcstr base = IsReplayApp() ? "RenderDoc" : "RenderDoc_app";
-
-    FileIO::GetDefaultFiles(base, capture_filename, m_LoggingFilename, m_Target);
-
-    if(m_CaptureFileTemplate.empty())
-      SetCaptureFileTemplate(capture_filename);
-
-    RDCLOGFILE(m_LoggingFilename.c_str());
+    InitLogFile();
   }
 
   const char *platform =
@@ -539,6 +530,7 @@ void RenderDoc::Initialise()
     RDCLOGOUTPUT();
 
   ProcessConfig();
+  m_Initialized = true;
 }
 
 RenderDoc::~RenderDoc()
@@ -589,6 +581,21 @@ RenderDoc::~RenderDoc()
 
   StringFormat::Shutdown();
 }
+
+void RenderDoc::InitLogFile()
+{
+  rdcstr capture_filename;
+
+  const rdcstr base = IsReplayApp() ? "RenderDoc" : "RenderDoc_app";
+
+  FileIO::GetDefaultFiles(base, capture_filename, m_LoggingFilename, m_Target);
+
+  if(m_CaptureFileTemplate.empty())
+    SetCaptureFileTemplate(capture_filename);
+
+  RDCLOGFILE(m_LoggingFilename.c_str());
+}
+
 
 void RenderDoc::RemoveHooks()
 {
@@ -1141,6 +1148,11 @@ uint32_t RenderDoc::GetCapturableWindowCount()
 {
   SCOPED_LOCK(m_CapturerListLock);
   return (uint32_t)m_WindowFrameCapturers.size();
+}
+
+bool RenderDoc::IsInitialized()
+{
+  return m_Initialized;
 }
 
 rdcstr RenderDoc::GetOverlayText(RDCDriver driver, DeviceOwnedWindow devWnd, uint32_t frameNumber,

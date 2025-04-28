@@ -7,7 +7,7 @@ export JAVA_HOME=/d/TencentKona-17.0.14.b1
 export APK_TARGET_ID=android-26
 export ANDROID_SDK_ROOT_PATH=%ANDROID_SDK%
 export ANDROID_NDK_ROOT_PATH=%ANDROID_NDK%
-export GIT_HASH=8a394019fdb62ad82be87bfd338a5ec43f4a5d95
+export GIT_HASH=$(git rev-parse HEAD)
 
 export PATH=/C/Program\ Files/CMake/bin:~/AppData/Local/Android/Sdk/cmake/3.22.1/bin:/F/jdk-1.8/bin:/C/Strawberry/c/bin:/D/Git/mingw64/bin:/D/Git/usr/bin:/D/Git/bin:/C/windows/system32:/C/windows:/C/windows/System32/Wbem:/C/windows/System32/WindowsPowerShell/v1.0:/C/windows/System32/OpenSSH
 
