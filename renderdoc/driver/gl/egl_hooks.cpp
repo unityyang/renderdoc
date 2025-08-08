@@ -23,6 +23,7 @@
  ******************************************************************************/
 
 #include "core/settings.h"
+#include "core/framedoc.h"
 #include "hooks/hooks.h"
 #include "strings/string_utils.h"
 #include "egl_dispatch_table.h"
@@ -1055,6 +1056,10 @@ bool ShouldHookEGL()
   if(ignore_layers.size() >= 1 && ignore_layers[0] == '1')
     return true;
 
+  rdcstr framedoc_ignore_layers = Process::GetEnvVariable("FRAMEDOC_IGNORE_LAYERS");
+  if(framedoc_ignore_layers.size() >= 1 && framedoc_ignore_layers[0] == '1')
+    return true;
+
   RDCLOG("ShouldHookEGL Check EGL_EXTENSIONS");
   const char *eglExts = query_string(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 
@@ -1129,6 +1134,7 @@ typedef __eglMustCastToProperFunctionPointerType(EGLAPIENTRY *PFNEGLGETNEXTLAYER
 HOOK_EXPORT void AndroidGLESLayer_Initialize(void *layer_id,
                                              PFNEGLGETNEXTLAYERPROCADDRESSPROC next_gpa)
 {
+  FrameDoc::InitLib("AndroidGLESLayer_Initialize");
   RDCLOG("Initialising Android GLES layer with ID %p", layer_id);
 
   // as a hook callback this is only called while capturing

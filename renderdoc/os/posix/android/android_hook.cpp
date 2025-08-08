@@ -26,6 +26,7 @@
 #include "common/threading.h"
 #include "hooks/hooks.h"
 #include "plthook/plthook.h"
+#include "core/framedoc.h"
 
 #include <android/dlext.h>
 #include <dlfcn.h>
@@ -743,6 +744,8 @@ void LibraryHooks::EndHookRegistration()
   // on android, but we'll try!)
   // we use RTLD_NOLOAD to prevent a second copy being loaded if this path doesn't refer to
   // ourselves or otherwise breaks because of android's terrible library handling.
+  FrameDoc::PreventLibUnloaded();
+  if(false) // instead by FrameDoc::PreventLibUnloaded()
   {
     rdcstr selfLib;
     FileIO::GetLibraryFilename(selfLib);

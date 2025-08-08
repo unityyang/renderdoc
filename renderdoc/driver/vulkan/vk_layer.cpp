@@ -28,6 +28,7 @@
 #include "api/replay/version.h"
 #include "common/common.h"
 #include "common/threading.h"
+#include "core/framedoc.h"
 #include "hooks/hooks.h"
 #include "os/os_specific.h"
 #include "strings/string_utils.h"
@@ -278,6 +279,7 @@ VKAPI_ATTR VkResult VKAPI_CALL hooked_vkCreateInstance(const VkInstanceCreateInf
                                                        const VkAllocationCallbacks *,
                                                        VkInstance *pInstance)
 {
+  FrameDoc::InitLib("hooked_vkCreateInstance");
   KeepLayerAlive();
 
   WrappedVulkan *core = new WrappedVulkan();

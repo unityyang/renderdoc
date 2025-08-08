@@ -47,6 +47,8 @@
 
 #include "replay/renderdoc_serialise.inl"
 
+#include "framedoc.h"
+
 extern "C" const rdcstr VulkanLayerJSONBasename = STRINGIZE(RDOC_BASE_NAME);
 
 RDOC_DEBUG_CONFIG(bool, Capture_Debug_SnapshotDiagnosticLog, false,
@@ -477,7 +479,7 @@ void RenderDoc::Initialise()
   // set default capture log - useful for when hooks aren't setup
   // through the UI (and a log file isn't set manually)
   {
-    InitLogFile();
+    FrameDoc::InitLogFile();
   }
 
   const char *platform =
