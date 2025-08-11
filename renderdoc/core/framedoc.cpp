@@ -4,9 +4,11 @@
 #include "os/os_specific.h"
 #include "api/replay/version.h"
 #include <dlfcn.h>
+#include "strings/string_utils.h"
 
 namespace FrameDoc
 {
+LauncherConf launcher_conf = LauncherConf();
 PFN_LibLoad g_LibInitFunction = nullptr;
 std::atomic_bool g_nLibInitialized{false};
 std::atomic_bool g_nLibUnloadedPrevented{false};
@@ -40,6 +42,46 @@ bool ReadLauncherConf(rdcstr& OutContent)
   return false;
 }
 
+void ParseLauncherConf()
+{
+  rdcstr confstr;
+  if(ReadLauncherConf(confstr))
+  {
+    RDCLOG("LauncherConf: %s", confstr.c_str());
+    rdcarray<rdcstr> lines;
+    split(confstr, lines, '\n');
+    for(size_t i = 0; i < lines.size(); ++i)
+    {
+      rdcstr line = lines[i].trimmed();
+      if(line.beginsWith("#"))
+      {
+        continue;
+      }
+      int32_t index = line.find('=');
+      if(index > 0 && index < line.length() - 1)
+      {
+        rdcstr key = strlower(line.substr(0, index).trimmed());
+        rdcstr value = strlower(line.substr(index+1, line.length() - index - 1).trimmed());
+
+        if(key == "version")
+        {
+          rdcarray<rdcstr> version;
+          split(value, version, '.');
+          if(version.size() >= 2)
+          {
+            launcher_conf.major_version = atoi(version[0].c_str());
+            launcher_conf.minor_version = atoi(version[1].c_str());
+          }
+        }
+      }
+    }
+  }
+  else
+  {
+    RDCLOG("LauncherConf: not found");
+  }
+}
+
 bool CheckPackageConf(const rdcstr &dir_path, const rdcstr &file_extension = "conf")
 {
   rdcstr package_name;
@@ -60,28 +102,37 @@ bool CheckProp(const rdcstr &prop_name)
   return false;
 }
 
-int ShouldInitLibOnLoad()
+rdcstr LoadLauncherConf()
 {
-  // check property
-  if(CheckProp("IGNORE_LAYERS"))
+  
+}
+
+bool ShouldInitLibOnLoad(rdcstr& OutDesc)
+{
+  OutDesc = "";
+  if(FRAME_DOC_LAUNCHER_VERSION_SUPPORT(1, 0))
   {
-    return 1;
+    if(CheckProp("IGNORE_LAYERS"))
+    {
+      OutDesc = "property IGNORE_LAYERS";
+      return true;
+    }
+    if(CheckPackageConf("/data/local/tmp/FrameDoc/"))
+    {
+      OutDesc = "tmp PackageConf";
+      return true;
+    }
   }
-  if(CheckProp("FRAMEDOC_IGNORE_LAYERS"))
+  else // fallback
   {
-    return 2;
-  }
-  // check files
-  if(CheckPackageConf("sdcard/FrameDoc/"))
-  {
-    return 3;
-  }
-  if(CheckPackageConf("/data/local/tmp/FrameDoc/"))
-  {
-    return 4;
+    if(CheckPackageConf("sdcard/FrameDoc/"))
+    {
+      OutDesc = "sdcard PackageConf";
+      return true;
+    }
   }
 
-  return 0;
+  return false;
 }
 
 void InitLogFile()
@@ -137,15 +188,12 @@ void InitLibOnLoad()
 {
   InitLogFile();
   // check launcher conf
-  rdcstr LauncherConf;
-  if(ReadLauncherConf(LauncherConf))
+  ParseLauncherConf();
+
+  rdcstr shouldInitDesc;
+  if(ShouldInitLibOnLoad(shouldInitDesc))
   {
-    RDCLOG("FrameDocLauncher.conf: %s", LauncherConf.c_str());
-  }
-  
-  if(int shouldInit = ShouldInitLibOnLoad())
-  {
-    InitLib("OnLoad_" + ToStr(shouldInit));
+    InitLib("OnLoad " + shouldInitDesc);
   }
   else
   {

@@ -27,6 +27,7 @@
 #include "common/formatting.h"
 #include "os/os_specific.h"
 #include "strings/string_utils.h"
+#include "core/framedoc.h"
 
 extern char **environ;
 
@@ -159,9 +160,19 @@ rdcstr Process::GetEnvVariable(const rdcstr &name)
 {
   // we fake environment variables with properties
   Process::ProcessResult result;
-  Process::LaunchProcess("getprop", ".",
+  if(FRAME_DOC_LAUNCHER_VERSION_SUPPORT(1, 0))
+  {
+    Process::LaunchProcess("getprop", ".",
+                           StringFormat::Fmt("debug.fdoc.%s variable_is_not_set", name.c_str()), true,
+                           &result);  
+  }
+  else
+  {
+    Process::LaunchProcess("getprop", ".",
                          StringFormat::Fmt("debug.rdoc.%s variable_is_not_set", name.c_str()), true,
                          &result);
+  }
+  
 
   rdcstr settingsOutput;
 
