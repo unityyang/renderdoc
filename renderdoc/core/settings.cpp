@@ -466,7 +466,7 @@ CONFIG_SUPPORT_TYPE(rdcarray<rdcstr>)
 
 void RenderDoc::ProcessConfig()
 {
-  rdcstr confFile = FileIO::GetAppFolderFilename("renderdoc.conf");
+  rdcstr confFile = FileIO::GetAppFolderFilename("framedoc.conf");
 
   RDCLOG("Loading config from %s", confFile.c_str());
 

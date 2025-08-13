@@ -25,23 +25,44 @@
 #include "core/core.h"
 #include "hooks/hooks.h"
 #include "os/os_specific.h"
-#include "api/replay/version.h"
+#include "core/framedoc.h"
 
 void ResetHookingEnvVars();
 
-bool library_enabled()
+void library_load_capture()
 {
-  bool shouldEnabled = false;
-  rdcstr package_name;
-  FileIO::GetExecutableFilename(package_name);
-  rdcstr confFile = rdcstr("sdcard/FrameDoc/") + package_name + rdcstr(".conf");
-  bool file_exsists = FileIO::exists(confFile);
-  if(file_exsists)
+  RenderDoc::Inst().Initialise();
+
+  ResetHookingEnvVars();
+
+  rdcstr capturefile = Process::GetEnvVariable("RENDERDOC_CAPFILE");
+  rdcstr opts = Process::GetEnvVariable("RENDERDOC_CAPOPTS");
+
+  if(!opts.empty())
   {
-    shouldEnabled = true;
+    CaptureOptions optstruct;
+    optstruct.DecodeFromString(opts);
+
+    RDCLOG("Using delay for debugger %u", optstruct.delayForDebugger);
+
+    RenderDoc::Inst().SetCaptureOptions(optstruct);
   }
-  
-  return shouldEnabled;
+
+  if(!capturefile.empty())
+  {
+    RenderDoc::Inst().SetCaptureFileTemplate(capturefile);
+  }
+
+  rdcstr curfile;
+  FileIO::GetExecutableFilename(curfile);
+
+  RDCLOG("Loading into %s", curfile.c_str());
+
+  LibraryHooks::RegisterHooks();
+
+  // we have a short sleep here to allow target control to connect, since unlike windows we can't
+  // suspend the process during startup.
+  Threading::Sleep(15);
 }
 
 // DllMain equivalent
@@ -61,48 +82,8 @@ void library_loaded()
   }
   else
   {
-    if(!library_enabled())
-    {
-      LibraryHooks::PreventInit();
-      RenderDoc::Inst().InitLogFile();
-      RDCLOG("FrameDoc v%s (%s) Disabled.", FRAMEDOC_MAJOR_MINOR_VERSION_STRING, GitVersionHash);
-      return;
-    }
-
-    RenderDoc::Inst().Initialise();
-
-    RDCLOG("FrameDoc v%s (%s) Initialised.", FRAMEDOC_MAJOR_MINOR_VERSION_STRING, GitVersionHash);
-
-    ResetHookingEnvVars();
-
-    rdcstr capturefile = Process::GetEnvVariable("RENDERDOC_CAPFILE");
-    rdcstr opts = Process::GetEnvVariable("RENDERDOC_CAPOPTS");
-
-    if(!opts.empty())
-    {
-      CaptureOptions optstruct;
-      optstruct.DecodeFromString(opts);
-
-      RDCLOG("Using delay for debugger %u", optstruct.delayForDebugger);
-
-      RenderDoc::Inst().SetCaptureOptions(optstruct);
-    }
-
-    if(!capturefile.empty())
-    {
-      RenderDoc::Inst().SetCaptureFileTemplate(capturefile);
-    }
-
-    rdcstr curfile;
-    FileIO::GetExecutableFilename(curfile);
-
-    RDCLOG("Loading into %s", curfile.c_str());
-
-    LibraryHooks::RegisterHooks();
-
-    // we have a short sleep here to allow target control to connect, since unlike windows we can't
-    // suspend the process during startup.
-    Threading::Sleep(15);
+    FrameDoc::RegisterLibLoadFunction(&library_load_capture);
+    FrameDoc::InitLibOnLoad();
   }
 }
 

@@ -23,6 +23,7 @@
  ******************************************************************************/
 
 #include "core/settings.h"
+#include "core/framedoc.h"
 #include "hooks/hooks.h"
 #include "strings/string_utils.h"
 #include "egl_dispatch_table.h"
@@ -1129,6 +1130,7 @@ typedef __eglMustCastToProperFunctionPointerType(EGLAPIENTRY *PFNEGLGETNEXTLAYER
 HOOK_EXPORT void AndroidGLESLayer_Initialize(void *layer_id,
                                              PFNEGLGETNEXTLAYERPROCADDRESSPROC next_gpa)
 {
+  FrameDoc::InitLib("AndroidGLESLayer_Initialize");
   RDCLOG("Initialising Android GLES layer with ID %p", layer_id);
 
   // as a hook callback this is only called while capturing

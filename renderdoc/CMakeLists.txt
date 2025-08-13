@@ -141,6 +141,8 @@ set(sources
     core/image_viewer.cpp
     core/core.h
     core/crash_handler.h
+    core/framedoc.cpp
+    core/framedoc.h
     core/gpu_address_range_tracker.cpp
     core/gpu_address_range_tracker.h
     core/target_control.cpp

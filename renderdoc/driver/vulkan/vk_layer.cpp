@@ -28,6 +28,7 @@
 #include "api/replay/version.h"
 #include "common/common.h"
 #include "common/threading.h"
+#include "core/framedoc.h"
 #include "hooks/hooks.h"
 #include "os/os_specific.h"
 #include "strings/string_utils.h"
@@ -278,6 +279,7 @@ VKAPI_ATTR VkResult VKAPI_CALL hooked_vkCreateInstance(const VkInstanceCreateInf
                                                        const VkAllocationCallbacks *,
                                                        VkInstance *pInstance)
 {
+  FrameDoc::InitLib("hooked_vkCreateInstance");
   KeepLayerAlive();
 
   WrappedVulkan *core = new WrappedVulkan();
@@ -299,24 +301,24 @@ VKAPI_ATTR void VKAPI_CALL hooked_vkDestroyInstance(VkInstance instance, const V
 
 #pragma comment( \
     linker,      \
-    "/EXPORT:VK_LAYER_RENDERDOC_CaptureEnumerateDeviceLayerProperties=_VK_LAYER_RENDERDOC_CaptureEnumerateDeviceLayerProperties@12")
+    "/EXPORT:VK_LAYER_FRAMEDOC_CaptureEnumerateDeviceLayerProperties=_VK_LAYER_FRAMEDOC_CaptureEnumerateDeviceLayerProperties@12")
 #pragma comment( \
     linker,      \
-    "/EXPORT:VK_LAYER_RENDERDOC_CaptureEnumerateDeviceExtensionProperties=_VK_LAYER_RENDERDOC_CaptureEnumerateDeviceExtensionProperties@16")
+    "/EXPORT:VK_LAYER_FRAMEDOC_CaptureEnumerateDeviceExtensionProperties=_VK_LAYER_FRAMEDOC_CaptureEnumerateDeviceExtensionProperties@16")
 #pragma comment( \
     linker,      \
-    "/EXPORT:VK_LAYER_RENDERDOC_CaptureEnumerateInstanceExtensionProperties=_VK_LAYER_RENDERDOC_CaptureEnumerateInstanceExtensionProperties@16")
+    "/EXPORT:VK_LAYER_FRAMEDOC_CaptureEnumerateInstanceExtensionProperties=_VK_LAYER_FRAMEDOC_CaptureEnumerateInstanceExtensionProperties@16")
 #pragma comment( \
     linker,      \
-    "/EXPORT:VK_LAYER_RENDERDOC_CaptureGetDeviceProcAddr=_VK_LAYER_RENDERDOC_CaptureGetDeviceProcAddr@8")
+    "/EXPORT:VK_LAYER_FRAMEDOC_CaptureGetDeviceProcAddr=_VK_LAYER_FRAMEDOC_CaptureGetDeviceProcAddr@8")
 #pragma comment( \
     linker,      \
-    "/EXPORT:VK_LAYER_RENDERDOC_CaptureGetInstanceProcAddr=_VK_LAYER_RENDERDOC_CaptureGetInstanceProcAddr@8")
+    "/EXPORT:VK_LAYER_FRAMEDOC_CaptureGetInstanceProcAddr=_VK_LAYER_FRAMEDOC_CaptureGetInstanceProcAddr@8")
 #endif
 
 extern "C" {
 
-VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL VK_LAYER_RENDERDOC_CaptureEnumerateDeviceLayerProperties(
+VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL VK_LAYER_FRAMEDOC_CaptureEnumerateDeviceLayerProperties(
     VkPhysicalDevice physicalDevice, uint32_t *pPropertyCount, VkLayerProperties *pProperties)
 {
   // must have a property count, either to fill out or use as a size
@@ -350,7 +352,7 @@ VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL VK_LAYER_RENDERDOC_CaptureEnumera
 }
 
 VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL
-VK_LAYER_RENDERDOC_CaptureEnumerateDeviceExtensionProperties(VkPhysicalDevice physicalDevice,
+VK_LAYER_FRAMEDOC_CaptureEnumerateDeviceExtensionProperties(VkPhysicalDevice physicalDevice,
                                                              const char *pLayerName,
                                                              uint32_t *pPropertyCount,
                                                              VkExtensionProperties *pProperties)
@@ -366,7 +368,7 @@ VK_LAYER_RENDERDOC_CaptureEnumerateDeviceExtensionProperties(VkPhysicalDevice ph
 }
 
 VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL
-VK_LAYER_RENDERDOC_CaptureEnumerateInstanceExtensionProperties(
+VK_LAYER_FRAMEDOC_CaptureEnumerateInstanceExtensionProperties(
     const VkEnumerateInstanceExtensionPropertiesChain *pChain, const char *pLayerName,
     uint32_t *pPropertyCount, VkExtensionProperties *pProperties)
 {
@@ -414,10 +416,10 @@ VK_LAYER_RENDERDOC_CaptureEnumerateInstanceExtensionProperties(
 // proc addr routines
 
 VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL
-VK_LAYER_RENDERDOC_CaptureGetDeviceProcAddr(VkDevice device, const char *pName)
+VK_LAYER_FRAMEDOC_CaptureGetDeviceProcAddr(VkDevice device, const char *pName)
 {
   if(!strcmp("vkGetDeviceProcAddr", pName))
-    return (PFN_vkVoidFunction)&VK_LAYER_RENDERDOC_CaptureGetDeviceProcAddr;
+    return (PFN_vkVoidFunction)&VK_LAYER_FRAMEDOC_CaptureGetDeviceProcAddr;
   if(!strcmp("vkCreateDevice", pName))
     return (PFN_vkVoidFunction)&hooked_vkCreateDevice;
   if(!strcmp("vkDestroyDevice", pName))
@@ -448,10 +450,10 @@ VK_LAYER_RENDERDOC_CaptureGetDeviceProcAddr(VkDevice device, const char *pName)
 }
 
 VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL
-VK_LAYER_RENDERDOC_Capture_layerGetPhysicalDeviceProcAddr(VkInstance instance, const char *pName);
+VK_LAYER_FRAMEDOC_Capture_layerGetPhysicalDeviceProcAddr(VkInstance instance, const char *pName);
 
 VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL
-VK_LAYER_RENDERDOC_CaptureGetInstanceProcAddr(VkInstance instance, const char *pName)
+VK_LAYER_FRAMEDOC_CaptureGetInstanceProcAddr(VkInstance instance, const char *pName)
 {
   // if name is NULL undefined is returned, let's return NULL
   if(pName == NULL)
@@ -460,11 +462,11 @@ VK_LAYER_RENDERDOC_CaptureGetInstanceProcAddr(VkInstance instance, const char *p
   // a NULL instance can return vkGetInstanceProcAddr or a global function, handle that here
 
   if(!strcmp("vkGetInstanceProcAddr", pName))
-    return (PFN_vkVoidFunction)&VK_LAYER_RENDERDOC_CaptureGetInstanceProcAddr;
+    return (PFN_vkVoidFunction)&VK_LAYER_FRAMEDOC_CaptureGetInstanceProcAddr;
   if(!strcmp("vkEnumerateInstanceExtensionProperties", pName))
-    return (PFN_vkVoidFunction)&VK_LAYER_RENDERDOC_CaptureEnumerateInstanceExtensionProperties;
+    return (PFN_vkVoidFunction)&VK_LAYER_FRAMEDOC_CaptureEnumerateInstanceExtensionProperties;
   if(!strcmp("vk_layerGetPhysicalDeviceProcAddr", pName))
-    return (PFN_vkVoidFunction)&VK_LAYER_RENDERDOC_Capture_layerGetPhysicalDeviceProcAddr;
+    return (PFN_vkVoidFunction)&VK_LAYER_FRAMEDOC_Capture_layerGetPhysicalDeviceProcAddr;
 
   // don't implement vkEnumerateInstanceLayerProperties or vkEnumerateInstanceVersion, the loader
   // will do that
@@ -475,11 +477,11 @@ VK_LAYER_RENDERDOC_CaptureGetInstanceProcAddr(VkInstance instance, const char *p
     return NULL;
 
   if(!strcmp("vkEnumerateDeviceLayerProperties", pName))
-    return (PFN_vkVoidFunction)&VK_LAYER_RENDERDOC_CaptureEnumerateDeviceLayerProperties;
+    return (PFN_vkVoidFunction)&VK_LAYER_FRAMEDOC_CaptureEnumerateDeviceLayerProperties;
   if(!strcmp("vkEnumerateDeviceExtensionProperties", pName))
-    return (PFN_vkVoidFunction)&VK_LAYER_RENDERDOC_CaptureEnumerateDeviceExtensionProperties;
+    return (PFN_vkVoidFunction)&VK_LAYER_FRAMEDOC_CaptureEnumerateDeviceExtensionProperties;
   if(!strcmp("vkGetDeviceProcAddr", pName))
-    return (PFN_vkVoidFunction)&VK_LAYER_RENDERDOC_CaptureGetDeviceProcAddr;
+    return (PFN_vkVoidFunction)&VK_LAYER_FRAMEDOC_CaptureGetDeviceProcAddr;
   if(!strcmp("vkCreateDevice", pName))
     return (PFN_vkVoidFunction)&hooked_vkCreateDevice;
   if(!strcmp("vkDestroyDevice", pName))
@@ -536,18 +538,18 @@ VK_LAYER_RENDERDOC_CaptureGetInstanceProcAddr(VkInstance instance, const char *p
 }
 
 VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL
-VK_LAYER_RENDERDOC_Capture_layerGetPhysicalDeviceProcAddr(VkInstance instance, const char *pName)
+VK_LAYER_FRAMEDOC_Capture_layerGetPhysicalDeviceProcAddr(VkInstance instance, const char *pName)
 {
   // GetPhysicalDeviceProcAddr acts like GetInstanceProcAddr but it returns NULL for any functions
   // which are known but aren't physical device functions
   if(!strcmp("vkGetInstanceProcAddr", pName))
     return NULL;
   if(!strcmp("vk_layerGetPhysicalDeviceProcAddr", pName))
-    return (PFN_vkVoidFunction)&VK_LAYER_RENDERDOC_Capture_layerGetPhysicalDeviceProcAddr;
+    return (PFN_vkVoidFunction)&VK_LAYER_FRAMEDOC_Capture_layerGetPhysicalDeviceProcAddr;
   if(!strcmp("vkEnumerateDeviceLayerProperties", pName))
-    return (PFN_vkVoidFunction)&VK_LAYER_RENDERDOC_CaptureEnumerateDeviceLayerProperties;
+    return (PFN_vkVoidFunction)&VK_LAYER_FRAMEDOC_CaptureEnumerateDeviceLayerProperties;
   if(!strcmp("vkEnumerateDeviceExtensionProperties", pName))
-    return (PFN_vkVoidFunction)&VK_LAYER_RENDERDOC_CaptureEnumerateDeviceExtensionProperties;
+    return (PFN_vkVoidFunction)&VK_LAYER_FRAMEDOC_CaptureEnumerateDeviceExtensionProperties;
   if(!strcmp("vkEnumerateInstanceExtensionProperties", pName))
     return NULL;
   if(!strcmp("vkGetDeviceProcAddr", pName))
@@ -625,17 +627,17 @@ VK_LAYER_RENDERDOC_Capture_layerGetPhysicalDeviceProcAddr(VkInstance instance, c
 
 // layer interface negotation (new interface)
 VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL
-VK_LAYER_RENDERDOC_CaptureNegotiateLoaderLayerInterfaceVersion(VkNegotiateLayerInterface *pVersionStruct)
+VK_LAYER_FRAMEDOC_CaptureNegotiateLoaderLayerInterfaceVersion(VkNegotiateLayerInterface *pVersionStruct)
 {
   if(pVersionStruct->sType != LAYER_NEGOTIATE_INTERFACE_STRUCT)
     return VK_ERROR_INITIALIZATION_FAILED;
 
   if(pVersionStruct->loaderLayerInterfaceVersion >= 2)
   {
-    pVersionStruct->pfnGetInstanceProcAddr = VK_LAYER_RENDERDOC_CaptureGetInstanceProcAddr;
-    pVersionStruct->pfnGetDeviceProcAddr = VK_LAYER_RENDERDOC_CaptureGetDeviceProcAddr;
+    pVersionStruct->pfnGetInstanceProcAddr = VK_LAYER_FRAMEDOC_CaptureGetInstanceProcAddr;
+    pVersionStruct->pfnGetDeviceProcAddr = VK_LAYER_FRAMEDOC_CaptureGetDeviceProcAddr;
     pVersionStruct->pfnGetPhysicalDeviceProcAddr =
-        VK_LAYER_RENDERDOC_Capture_layerGetPhysicalDeviceProcAddr;
+        VK_LAYER_FRAMEDOC_Capture_layerGetPhysicalDeviceProcAddr;
   }
 
   // we only support the current version. Don't let updating the header silently make us report a
